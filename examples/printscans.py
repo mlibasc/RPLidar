@@ -27,10 +27,25 @@ def run():
     ax.set_rmax(DMAX)
     ax.grid(True)
 
-    iterator = lidar.iter_scans()
-    ani = animation.FuncAnimation(fig, update_line,
-        fargs=(iterator, line), interval=100)
-    plt.show()
+    while(True):
+        iterator = lidar.iter_scans()
+        scan = next(iterator)
+        while(scan):
+            # Do stuff with scan data here
+            # CASE 1
+            # loop through the elements in scan to get the largest number for distance
+            # CASE 2
+            # have a running average to get the most "open space"
+            # loop through the elements, have an incremental array, while looping through the array,
+            # take new averages as new elements are looped through
+            # at the end, output the angle/distance of the most open space            
+
+            print(scan)
+            scan = next(iterator)
+    #iterator = lidar.iter_scans()
+    #ani = animation.FuncAnimation(fig, update_line,
+    #    fargs=(iterator, line), interval=50)
+    #plt.show()
     lidar.stop()
     lidar.disconnect()
 
