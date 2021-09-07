@@ -7,15 +7,15 @@ import matplotlib.animation as animation
 import RPi.GPIO as GPIO
 import time
 
-direction = 18
+path = 18
 PORT_NAME = '/dev/ttyUSB0'
 DMAX = 4000
 IMIN = 0
 IMAX = 50
 
-GPIO.setmode(GPIO.BOARD)
-GPIO.setup(direction, GPIO.OUT)
-
+GPIO.setmode(GPIO.BCM)
+GPIO.setwarnings(False)
+GPIO.setup(path, GPIO.OUT)
 
 def update_line(num, iterator, line):
     scan = next(iterator)
@@ -24,27 +24,35 @@ def update_line(num, iterator, line):
     intens = np.array([meas[0] for meas in scan])
     line.set_array(intens)
     return line,
-'''
+
 def sendDir(dist, angle):
+
+   # for i in range(3):
+   #     GPIO.output(path, GPIO.HIGH)
+   #     time.sleep(0.5)
+   #     GPIO.output(Path, GPIO.LOW)
+   #     time.sleep(0.5)
     
-    if(angle >=0 and angle < 180):
-        GPIO.output(direction, GPIO.HIGH)
-        time.sleep(0.2)
+    if(angle >=0 and angle < 180): 
+        GPIO.output(path, GPIO.HIGH)
+        print "0<=x<180"
+        #time.sleep(0.2)
     else:
-        GPIO.output(direction, GPIO.LOW)
-        time.sleep(0.2) 
-'''
+        GPIO.output(path, GPIO.LOW)
+        print "180<=x<360"
+        #time.sleep(0.2) 
+
 def run():
     lidar = RPLidar(PORT_NAME)
-    fig = plt.figure()
-    ax = plt.subplot(111, projection='polar')
-    line = ax.scatter([0, 0], [0, 0], s=5, c=[IMIN, IMAX],
-                           cmap=plt.cm.Greys_r, lw=0)
+    #fig = plt.figure()
+    #ax = plt.subplot(111, projection='polar')
+    #line = ax.scatter([0, 0], [0, 0], s=5, c=[IMIN, IMAX], cmap=plt.cm.Greys_r, lw=0)
+   
     #xVals = [0, maxDist]
     #yVals = [0, maxAngle]
     #plt.plot(xVals,yVals)
-    ax.set_rmax(DMAX)
-    ax.grid(True)
+    #ax.set_rmax(DMAX)
+    #ax.grid(True)
 
     while(True):
         iterator = lidar.iter_scans()
@@ -57,13 +65,11 @@ def run():
             for data  in scan:
                 if(data[2] > maxDist):
                     maxDist = data[2]
-                    maxAngle = data[1]             
+                    maxAngle = data[1]
             # Method #2
             # rolling average to find the most open space
-            for data in scan:
-                if
-
-
+            #for data in scan:
+                #if
 
 
 
@@ -77,6 +83,7 @@ def run():
 
             print(scan)
             print('maxDist: ',  maxDist, " maxAngle: ", maxAngle)
+            sendDir(maxDist, maxAngle)
             maxDist = -1
             scan = next(iterator)
     #iterator = lidar.iter_scans()
