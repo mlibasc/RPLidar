@@ -26,21 +26,15 @@ def update_line(num, iterator, line):
     return line,
 
 def sendDir(dist, angle):
-
-   # for i in range(3):
-   #     GPIO.output(path, GPIO.HIGH)
-   #     time.sleep(0.5)
-   #     GPIO.output(Path, GPIO.LOW)
-   #     time.sleep(0.5)
     
     if(angle >=0 and angle < 180): 
         GPIO.output(path, GPIO.HIGH)
         print "0<=x<180"
-        #time.sleep(0.2)
+        time.sleep(0.5)
     else:
         GPIO.output(path, GPIO.LOW)
         print "180<=x<360"
-        #time.sleep(0.2) 
+        time.sleep(0.5) 
 
 def run():
     lidar = RPLidar(PORT_NAME)
@@ -62,16 +56,20 @@ def run():
         while(scan):
             # Method #1
             # looping through the elements in scan to get the max distance
-            for data  in scan:
-                if(data[2] > maxDist):
-                    maxDist = data[2]
-                    maxAngle = data[1]
+            #for data  in scan:
+            #    if(data[2] > maxDist):
+            #        maxDist = data[2]
+            #        maxAngle = data[1]
+            
             # Method #2
             # rolling average to find the most open space
-            #for data in scan:
-                #if
-
-
+            for i in range(len(scan)-10):
+                avg = 0
+                print('scan[i][2] = ', scan[i][2])
+                for j in range(10):
+                    avg += scan[i+j][2]
+                avg /= 10
+                print ('average = ', avg)
 
 
 
@@ -83,7 +81,7 @@ def run():
 
             print(scan)
             print('maxDist: ',  maxDist, " maxAngle: ", maxAngle)
-            sendDir(maxDist, maxAngle)
+            #sendDir(maxDist, maxAngle)
             maxDist = -1
             scan = next(iterator)
     #iterator = lidar.iter_scans()
