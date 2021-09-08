@@ -25,16 +25,16 @@ def update_line(num, iterator, line):
     line.set_array(intens)
     return line,
 
-def sendDir(dist, angle):
+def sendDir( angle):
     
     if(angle >=0 and angle < 180): 
         GPIO.output(path, GPIO.HIGH)
         print "0<=x<180"
-        time.sleep(0.5)
+        time.sleep(0.1)
     else:
         GPIO.output(path, GPIO.LOW)
         print "180<=x<360"
-        time.sleep(0.5) 
+        time.sleep(0.1) 
 
 def run():
     lidar = RPLidar(PORT_NAME)
@@ -51,8 +51,6 @@ def run():
     while(True):
         iterator = lidar.iter_scans()
         scan = next(iterator)
-        maxDist = -1
-        maxAngle = -1
         while(scan):
             # Method #1
             # looping through the elements in scan to get the max distance
@@ -63,15 +61,21 @@ def run():
             
             # Method #2
             # rolling average to find the most open space
+            print(len(scan))
+            maxDist = -1
+            maxAngle = -1
             for i in range(len(scan)-10):
                 avg = 0
-                print('scan[i][2] = ', scan[i][2])
+                midAngle = 0
                 for j in range(10):
                     avg += scan[i+j][2]
+                    midAngle += scan[i+j][1]
                 avg /= 10
-                print ('average = ', avg)
-
-
+                midAngle /= 10
+                if(avg > maxDist):
+                    maxDist = avg
+                    maxAngle = midAngle 
+                print ('average = %.2f, angle = %f' % (avg, midAngle))
 
 
             # have a running average to get the most "open space"
@@ -81,8 +85,7 @@ def run():
 
             print(scan)
             print('maxDist: ',  maxDist, " maxAngle: ", maxAngle)
-            #sendDir(maxDist, maxAngle)
-            maxDist = -1
+            sendDir(maxAngle)
             scan = next(iterator)
     #iterator = lidar.iter_scans()
     #ani = animation.FuncAnimation(fig, update_line,
