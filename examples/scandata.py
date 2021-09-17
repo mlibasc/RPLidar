@@ -7,15 +7,17 @@ import matplotlib.animation as animation
 import RPi.GPIO as GPIO
 import time
 
-path = 18
+path = 12
 PORT_NAME = '/dev/ttyUSB0'
 DMAX = 4000
 IMIN = 0
 IMAX = 50
 
-GPIO.setmode(GPIO.BCM)
+GPIO.setmode(GPIO.BOARD)
 GPIO.setwarnings(False)
 GPIO.setup(path, GPIO.OUT)
+pwm = GPIO.PWM(path, 50)
+increment = 5
 
 def update_line(num, iterator, line):
     scan = next(iterator)
@@ -25,8 +27,7 @@ def update_line(num, iterator, line):
     line.set_array(intens)
     return line,
 
-def sendDir( angle):
-    
+def sendDir(angle):
     if(angle >=0 and angle < 180): 
         GPIO.output(path, GPIO.HIGH)
         print "0<=x<180"
@@ -34,36 +35,57 @@ def sendDir( angle):
     else:
         GPIO.output(path, GPIO.LOW)
         print "180<=x<360"
-        time.sleep(0.1) 
+        time.sleep(0.1)
+
+def led(maxAngle):
+    # when heading is the same as maxAngle, dc = 50%
+    dc = (maxAngle / 360) * 100
+    print(dc)
+    pwm.ChangeDutyCycle(dc)
+    print ('dc: ', dc)
+     
 
 def run():
     lidar = RPLidar(PORT_NAME)
-    #fig = plt.figure()
-    #ax = plt.subplot(111, projection='polar')
-    #line = ax.scatter([0, 0], [0, 0], s=5, c=[IMIN, IMAX], cmap=plt.cm.Greys_r, lw=0)
-   
-    #xVals = [0, maxDist]
-    #yVals = [0, maxAngle]
-    #plt.plot(xVals,yVals)
-    #ax.set_rmax(DMAX)
-    #ax.grid(True)
-
+    blind1 = 1
+    blind2 = 359
     while(True):
         iterator = lidar.iter_scans()
         scan = next(iterator)
+        # clockwise rotation
         while(scan):
-            # Method #1
-            # looping through the elements in scan to get the max distance
-            #for data  in scan:
-            #    if(data[2] > maxDist):
-            #        maxDist = data[2]
-            #        maxAngle = data[1]
-            
-            # Method #2
+            # apply an infinite filter 
+            # get the average of 10 points, apply a factor 
+            # get the next data point, apply a factor
+            # add them together to get the new average
+
             # rolling average to find the most open space
-            print(len(scan))
+            #print(len(scan))
             maxDist = -1
             maxAngle = -1
+            avg = 0
+            avgAngle = 0
+            multA = 10 
+            multB = 1
+            
+            # average the first 10 samples 
+            for i in range(increment):
+                avg += scan[i][2]
+                avgAngle += scan[i][1]
+            avg /= increment
+            avgAngle /= increment
+
+            for i in range(len(scan)):
+                avg = ((avg * multA) + (scan[i][2] * multB)) / (multA + multB)
+                avgAngle = ((avgAngle * multA) + (scan[i][1] * multB)) / (multA + multB)
+                if(avg > maxDist):
+                    maxDist = avg
+                    maxAngle = avgAngle
+
+
+
+
+            '''
             for i in range(len(scan)-10):
                 avg = 0
                 midAngle = 0
@@ -72,30 +94,24 @@ def run():
                     midAngle += scan[i+j][1]
                 avg /= 10
                 midAngle /= 10
-                if(avg > maxDist):
+                print(avg)
+                if(avg > maxDist and midAngle > blind1 and midAngle < blind2):
                     maxDist = avg
                     maxAngle = midAngle 
                 print ('average = %.2f, angle = %f' % (avg, midAngle))
-
-
-            # have a running average to get the most "open space"
-            # loop through the elements, have an incremental array, while looping through the array,
-            # take new averages as new elements are looped through
-            # at the end, output the angle/distance of the most open space            
-
-            print(scan)
+            '''
+            #print(scan)
             print('maxDist: ',  maxDist, " maxAngle: ", maxAngle)
-            sendDir(maxAngle)
+            led(maxAngle)
+            #sendDir(maxAngle)
             scan = next(iterator)
-    #iterator = lidar.iter_scans()
-    #ani = animation.FuncAnimation(fig, update_line,
-    #    fargs=(iterator, line), interval=50)
-    #plt.show()
     lidar.stop()
     lidar.disconnect()
 
 if __name__ == '__main__':
-    try:
+    try:    
+        dc = 50
+        pwm.start(dc)
         run()
     except KeyboardInterrupt: # IF CTRL+C is pressed, exit cleanly:
         print('quitting')
