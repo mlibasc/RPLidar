@@ -43,7 +43,14 @@ def led(maxAngle):
     print(dc)
     pwm.ChangeDutyCycle(dc)
     print ('dc: ', dc)
-     
+    
+def obstacle(obDist, obAngle):
+    if(obAngle <= 180):
+        print "obstacle to right"
+    else:
+        print "obstacle to left"
+    
+ 
 
 def run():
     lidar = RPLidar(PORT_NAME)
@@ -63,6 +70,8 @@ def run():
             #print(len(scan))
             maxDist = -1
             maxAngle = -1
+            minDist = 500
+            minAngle = 500
             avg = 0
             avgAngle = 0
             multA = 10 
@@ -75,34 +84,21 @@ def run():
             avg /= increment
             avgAngle /= increment
 
-            for i in range(len(scan)):
+            for i in range(increment, len(scan)):
                 avg = ((avg * multA) + (scan[i][2] * multB)) / (multA + multB)
                 avgAngle = ((avgAngle * multA) + (scan[i][1] * multB)) / (multA + multB)
                 if(avg > maxDist):
                     maxDist = avg
                     maxAngle = avgAngle
+                if(avg < minDist):
+                    minAngle = avgAngle
 
 
-
-
-            '''
-            for i in range(len(scan)-10):
-                avg = 0
-                midAngle = 0
-                for j in range(10):
-                    avg += scan[i+j][2]
-                    midAngle += scan[i+j][1]
-                avg /= 10
-                midAngle /= 10
-                print(avg)
-                if(avg > maxDist and midAngle > blind1 and midAngle < blind2):
-                    maxDist = avg
-                    maxAngle = midAngle 
-                print ('average = %.2f, angle = %f' % (avg, midAngle))
-            '''
             #print(scan)
             print('maxDist: ',  maxDist, " maxAngle: ", maxAngle)
+            print('minDist: ', minDist, " minAngle: ", minAngle)
             led(maxAngle)
+            obstacle(minDist, minAngle)
             #sendDir(maxAngle)
             scan = next(iterator)
     lidar.stop()
