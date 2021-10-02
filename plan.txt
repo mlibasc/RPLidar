@@ -1,0 +1,48 @@
+right now:
+getting data from the lidar, per revolution
+finding the maximum distance and corresponding angle
+using 0<=x<180 and 180<=x<360 to decide right or left respectively
+send right as 5 and left as 0
+
+------------------------------------------
+take a rolling average to find the most open space -- low pass filter 
+
+------------------------------------------
+output analog signal to go left/right/forward towards the max distance
+
+-------------------------------------------
+use the analog signal to drive the cart
+
+-------------------------------------------
+obstacle avoidance, drive forward
+
+goals:
+
+-------------------------------------------
+be able to tell when obstacle is too close and what angle
+
+-------------------------------------------
+implement a PID for the cart
+
+
+-------------------------------------------
+isolate the system
+
+-------------------------------------------
+I2C connection between teensy and rpi 
+
+rattletale 
+- transducer on system interested in measured
+- have some receivers on the system as well
+- have transducer produce a signal and use the lock in amp to measure the phase and magnitude of the received signals
+- tells you about what you're measuring, strains, loads 
+
+- can use chrips to scan over several wavelengths
+
+
+
+-------------------------------------------
+RDP, so we can make edits in the "field"
+ 
+-------------------------------------------
+auto run, so the rpi can run the program on start/power
