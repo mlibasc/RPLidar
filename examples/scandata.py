@@ -169,7 +169,7 @@ def run():
             depth = np.rot90(get_depth()[0]) # get the depth readinngs from the camera
             #pwmDir(findMaxDist(depth))
             print('maxDist: ',  maxDist, " maxAngle: ", maxAngle)
-            print('minDist: ', minDist, " minAngle: ", minAngle)
+            #print('minDist: ', minDist, " minAngle: ", minAngle)
             led(maxAngle, rollAvg, maxDist, pwmDir(findMaxDist(depth)), findMaxDist(depth))
             #obstacle(minDist, minAngle)
             scan = next(iterator)
