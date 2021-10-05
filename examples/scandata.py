@@ -4,8 +4,10 @@ from rplidar import RPLidar
 import matplotlib.pyplot as plt
 import numpy as np
 import matplotlib.animation as animation
-import RPi.GPIO as GPIO
-import time
+#import RPi.GPIO as GPIO
+#import time
+from gpiozero import PWMLED
+from time import sleep
 
 import pygame
 from freenect import sync_get_depth as get_depth
@@ -21,10 +23,12 @@ DMAX = 4000
 IMIN = 0
 IMAX = 50
 
-GPIO.setmode(GPIO.BOARD)
-GPIO.setwarnings(False)
-GPIO.setup(path, GPIO.OUT)
-pwm = GPIO.PWM(path, 50)
+#GPIO.setmode(GPIO.BOARD)
+#GPIO.setwarnings(False)
+#GPIO.setup(path, GPIO.OUT)
+#pwm = GPIO.PWM(path, 50)
+#gnd and 6th pin down on left
+pwm = PWMLED(17)
 increment = 5
 
 def make_gamma():
@@ -117,10 +121,10 @@ def led(maxAngle, rollAvg, maxDist, kinpwm, findMaxDist):
     print ('lidar dc: ', liddc)
 
     if(kinCert*10 > lidCert):
-        pwm.ChangeDutyCycle(kindc)
+        pwm.value(kindc)
         print('output kindc: ', kindc)
     else:
-        pwm.ChangeDutyCycle(liddc)
+        pwm.value(liddc)
         print('output liddc: ', liddc)
     
 def obstacle(obDist, obAngle):
@@ -166,7 +170,8 @@ def run():
                 if(avg < minDist):
                     minAngle = avgAngle
 
-            depth = np.rot90(get_depth()[0]) # get the depth readinngs from the camera
+            #depth = np.rot90(get_depth()[0]) # get the depth readinngs from the camera
+            depth = np.rot90(get_depth()[0], 3)
             #pwmDir(findMaxDist(depth))
             print('maxDist: ',  maxDist, " maxAngle: ", maxAngle)
             #print('minDist: ', minDist, " minAngle: ", minAngle)
@@ -179,7 +184,7 @@ def run():
 if __name__ == '__main__':
     try:    
         dc = 50
-        pwm.start(dc)
+        pwm.value(dc)
         run()
     except KeyboardInterrupt: # IF CTRL+C is pressed, exit cleanly:
         print('quitting')
